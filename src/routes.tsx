@@ -1,4 +1,4 @@
-import SamplePage from './pages/SamplePage';
+import InterviewSimulator from './pages/InterviewSimulator';
 import type { ReactNode } from 'react';
 
 interface RouteConfig {
@@ -10,9 +10,9 @@ interface RouteConfig {
 
 const routes: RouteConfig[] = [
   {
-    name: 'Sample Page',
+    name: 'AI Interview Simulator',
     path: '/',
-    element: <SamplePage />
+    element: <InterviewSimulator />
   }
 ];
 
