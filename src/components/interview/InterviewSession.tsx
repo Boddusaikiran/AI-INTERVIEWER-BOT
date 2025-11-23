@@ -101,7 +101,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     }
   };
 
-  const handleAnswerSubmit = async (answer: string) => {
+  const handleAnswerSubmit = async (answer: string, typingMetrics?: { startTime: number; endTime: number; characterCount: number; pauseCount: number; correctionCount: number }) => {
     setIsSubmitting(true);
     setError(null);
 
@@ -198,6 +198,16 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
       return 'hr';
     };
 
+    const getPersonality = (roleText: string | undefined): 'strict-engineer' | 'friendly-hr' | 'logical-analyst' | 'creative-solver' | 'ceo-visionary' => {
+      if (!roleText) return 'friendly-hr';
+      const lower = roleText.toLowerCase();
+      if (lower.includes('strict')) return 'strict-engineer';
+      if (lower.includes('logical')) return 'logical-analyst';
+      if (lower.includes('creative')) return 'creative-solver';
+      if (lower.includes('ceo') || lower.includes('visionary')) return 'ceo-visionary';
+      return 'friendly-hr';
+    };
+
     return {
       score,
       multiDimensionalScore: {
@@ -213,6 +223,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
       suggestions: suggestionsMatch?.[1]?.trim().slice(0, 300) || 'Continue practicing and refining your responses.',
       modelAnswer: modelAnswerMatch?.[1]?.trim(),
       interviewerRole: getRole(roleMatch?.[1]),
+      interviewerPersonality: getPersonality(roleMatch?.[1]),
       difficulty: (difficultyMatch?.[1]?.toLowerCase() as 'easy' | 'medium' | 'hard' | 'expert') || 'medium',
       timeSpent: 0,
     };
@@ -263,42 +274,53 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
             focus: 'Foundation Building',
             activities: ['Practice answering common interview questions', 'Prepare specific examples from your experience'],
             resources: [
-              { title: 'Interview Preparation Guide', type: 'article', description: 'Comprehensive guide to interview prep' }
-            ]
+              { title: 'Interview Preparation Guide', type: 'article', description: 'Comprehensive guide to interview prep', priority: 'high' }
+            ],
+            milestones: ['Complete 10 practice questions', 'Document 5 STAR stories']
           },
           {
             week: 2,
             focus: 'Technical Skills',
             activities: ['Review technical concepts', 'Practice coding challenges'],
             resources: [
-              { title: 'Technical Interview Handbook', type: 'book', description: 'Essential technical interview guide' }
-            ]
+              { title: 'Technical Interview Handbook', type: 'book', description: 'Essential technical interview guide', priority: 'high' }
+            ],
+            milestones: ['Solve 20 coding problems', 'Review core concepts']
           },
           {
             week: 3,
             focus: 'Behavioral Questions',
             activities: ['Study the STAR method', 'Prepare behavioral stories'],
             resources: [
-              { title: 'STAR Method Course', type: 'course', description: 'Master behavioral interviews' }
-            ]
+              { title: 'STAR Method Course', type: 'course', description: 'Master behavioral interviews', priority: 'medium' }
+            ],
+            milestones: ['Prepare 10 behavioral stories', 'Practice with peers']
           },
           {
             week: 4,
             focus: 'Mock Interviews',
             activities: ['Conduct mock interviews', 'Get feedback from peers'],
             resources: [
-              { title: 'Mock Interview Platform', type: 'exercise', description: 'Practice with real scenarios' }
-            ]
+              { title: 'Mock Interview Platform', type: 'exercise', description: 'Practice with real scenarios', priority: 'high' }
+            ],
+            milestones: ['Complete 3 mock interviews', 'Refine weak areas']
           }
         ],
         resources: [
-          { title: 'Practice with mock interviews', type: 'exercise', description: 'Regular practice sessions' },
-          { title: 'Review common interview questions for your field', type: 'article', description: 'Industry-specific questions' },
-          { title: 'Study the STAR method for behavioral questions', type: 'course', description: 'Behavioral interview technique' },
+          { title: 'Practice with mock interviews', type: 'exercise', description: 'Regular practice sessions', priority: 'high' },
+          { title: 'Review common interview questions for your field', type: 'article', description: 'Industry-specific questions', priority: 'medium' },
+          { title: 'Study the STAR method for behavioral questions', type: 'course', description: 'Behavioral interview technique', priority: 'medium' },
         ],
         advice: 'You demonstrated good potential in this interview. Focus on providing more specific examples and elaborating on your technical knowledge. Keep practicing and you will continue to improve!',
         performanceTrend: 'consistent',
         readinessLevel: 'needs-practice',
+        detailedScorecard: [
+          { category: 'Technical Knowledge', score: 7, feedback: 'Good foundation, needs more depth' },
+          { category: 'Problem Solving', score: 7, feedback: 'Solid approach to problems' },
+          { category: 'Communication', score: 7, feedback: 'Clear and professional' },
+          { category: 'Behavioral Skills', score: 7, feedback: 'Good interpersonal awareness' },
+          { category: 'Cultural Fit', score: 7, feedback: 'Aligns well with team values' },
+        ],
       };
       setFinalEvaluation(fallbackEvaluation);
       setIsComplete(true);
@@ -426,6 +448,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
             onSubmit={handleAnswerSubmit} 
             isSubmitting={isSubmitting}
             disabled={isComplete}
+            enableCognitiveTracking={config.enablePsychometricAnalysis}
           />
         )}
       </div>

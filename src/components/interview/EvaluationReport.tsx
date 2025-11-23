@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Award, TrendingUp, AlertTriangle, BookOpen, Lightbulb, RotateCcw } from 'lucide-react';
+import { Award, TrendingUp, AlertTriangle, BookOpen, Lightbulb, RotateCcw, Brain, Target, Zap, Users } from 'lucide-react';
 import type { FinalEvaluation } from '@/types/interview';
 
 interface EvaluationReportProps {
@@ -204,6 +204,215 @@ export const EvaluationReport = ({ evaluation, candidateName, onRestart }: Evalu
           </ul>
         </CardContent>
       </Card>
+
+      {evaluation.psychometricProfile && (
+        <Card className="shadow-md border-l-4 border-l-primary">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Psychometric Profile Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <h4 className="font-semibold text-sm mb-3 text-foreground">Big Five Personality Traits (OCEAN)</h4>
+              <div className="space-y-3">
+                <ScoreBar label="Openness" score={evaluation.psychometricProfile.bigFive.openness} />
+                <ScoreBar label="Conscientiousness" score={evaluation.psychometricProfile.bigFive.conscientiousness} />
+                <ScoreBar label="Extraversion" score={evaluation.psychometricProfile.bigFive.extraversion} />
+                <ScoreBar label="Agreeableness" score={evaluation.psychometricProfile.bigFive.agreeableness} />
+                <ScoreBar label="Neuroticism (Emotional Stability)" score={10 - evaluation.psychometricProfile.bigFive.neuroticism} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">MBTI Type</p>
+                <Badge variant="secondary" className="text-sm font-bold">{evaluation.psychometricProfile.mbtiType}</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">IQ Score</p>
+                <Badge variant="secondary" className="text-sm font-bold">{evaluation.psychometricProfile.iqScore}</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Motivation</p>
+                <Badge variant="secondary" className="text-sm font-bold">{evaluation.psychometricProfile.motivationScore}/10</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Reliability</p>
+                <Badge variant="secondary" className="text-sm font-bold">{evaluation.psychometricProfile.reliabilityScore}/10</Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Leadership Style</p>
+                <p className="text-sm font-medium text-foreground">{evaluation.psychometricProfile.leadershipStyle}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Communication Style</p>
+                <p className="text-sm font-medium text-foreground">{evaluation.psychometricProfile.communicationStyle}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {evaluation.behavioralAnalysis && (
+        <Card className="shadow-md border-l-4 border-l-accent">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-accent" />
+              Behavioral & Soft Skills Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <ScoreBar label="Empathy" score={evaluation.behavioralAnalysis.empathy} />
+            <ScoreBar label="Leadership Potential" score={evaluation.behavioralAnalysis.leadershipPotential} />
+            <ScoreBar label="Decision Making Speed" score={evaluation.behavioralAnalysis.decisionMakingSpeed} />
+            <ScoreBar label="Communication Effectiveness" score={evaluation.behavioralAnalysis.communicationEffectiveness} />
+            <ScoreBar label="Pressure Handling" score={evaluation.behavioralAnalysis.pressureHandling} />
+            <ScoreBar label="Teamwork Orientation" score={evaluation.behavioralAnalysis.teamworkOrientation} />
+            <ScoreBar label="Conflict Resolution" score={evaluation.behavioralAnalysis.conflictResolution} />
+            
+            {evaluation.behavioralAnalysis.motivationSignals.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-2">Motivation Signals Detected:</p>
+                <div className="flex flex-wrap gap-2">
+                  {evaluation.behavioralAnalysis.motivationSignals.map((signal, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">{signal}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {evaluation.cognitiveProfile && (
+        <Card className="shadow-md border-l-4 border-l-success">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-success" />
+              Cognitive Intelligence Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <ScoreBar label="Thinking Speed" score={evaluation.cognitiveProfile.thinkingSpeed} />
+            <ScoreBar label="Logical Structure" score={evaluation.cognitiveProfile.logicalStructure} />
+            <ScoreBar label="Depth of Reasoning" score={evaluation.cognitiveProfile.depthOfReasoning} />
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Emotional Tone</p>
+                <Badge variant="secondary" className="text-xs capitalize">{evaluation.cognitiveProfile.emotionalTone}</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Stress Level</p>
+                <Badge variant="secondary" className="text-xs">{evaluation.cognitiveProfile.stressLevel}/10</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Typing Speed</p>
+                <Badge variant="secondary" className="text-xs">{evaluation.cognitiveProfile.typingPatterns.averageSpeed} cpm</Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Corrections</p>
+                <Badge variant="secondary" className="text-xs">{evaluation.cognitiveProfile.typingPatterns.correctionRate}%</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {evaluation.jobFitPrediction && (
+        <Card className="shadow-md border-l-4 border-l-warning">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className="w-5 h-5 text-warning" />
+              Job-Fit Prediction & Success Likelihood
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Overall Fit</p>
+                <p className="text-2xl font-bold text-primary">{evaluation.jobFitPrediction.overallFitScore}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Industry Alignment</p>
+                <p className="text-2xl font-bold text-foreground">{evaluation.jobFitPrediction.industryAlignment}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Role Alignment</p>
+                <p className="text-2xl font-bold text-foreground">{evaluation.jobFitPrediction.roleAlignment}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Success Likelihood</p>
+                <p className="text-2xl font-bold text-success">{evaluation.jobFitPrediction.successLikelihood}%</p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground mb-2">Comparison with Successful Candidates:</p>
+              <p className="text-sm text-foreground">{evaluation.jobFitPrediction.comparisonWithSuccessfulCandidates}</p>
+            </div>
+
+            {evaluation.jobFitPrediction.recommendations.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-2">Recommendations:</p>
+                <ul className="space-y-1">
+                  {evaluation.jobFitPrediction.recommendations.map((rec, idx) => (
+                    <li key={idx} className="text-sm text-foreground flex items-start gap-2">
+                      <span className="text-warning mt-1">→</span>
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {evaluation.knowledgeGaps && evaluation.knowledgeGaps.length > 0 && (
+        <Card className="shadow-md border-l-4 border-l-destructive">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Knowledge Gaps Detected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {evaluation.knowledgeGaps.map((gap, idx) => (
+                <div key={idx} className="p-3 bg-destructive/5 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-foreground">{gap.topic}</p>
+                    <Badge 
+                      variant={gap.severity === 'critical' ? 'destructive' : gap.severity === 'moderate' ? 'default' : 'secondary'}
+                      className="text-xs"
+                    >
+                      {gap.severity}
+                    </Badge>
+                  </div>
+                  {gap.suggestedResources.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground mb-1">Suggested Resources:</p>
+                      <ul className="space-y-1">
+                        {gap.suggestedResources.map((resource, ridx) => (
+                          <li key={ridx} className="text-xs text-foreground">
+                            • {resource.title} ({resource.type})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="shadow-md bg-primary/5">
         <CardHeader>

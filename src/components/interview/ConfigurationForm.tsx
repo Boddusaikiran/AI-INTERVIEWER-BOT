@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { X, Plus, Briefcase, Users, Zap, Lightbulb } from 'lucide-react';
-import type { InterviewConfig, ExperienceLevel, InterviewMode, InterviewRound } from '@/types/interview';
+import { X, Plus, Briefcase, Users, Zap, Lightbulb, Brain, Target, Code } from 'lucide-react';
+import type { InterviewConfig, ExperienceLevel, InterviewMode, InterviewRound, BrainMode, InterviewerPersonality } from '@/types/interview';
 
 interface ConfigurationFormProps {
   onStart: (config: InterviewConfig) => void;
@@ -22,8 +22,12 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
   const [jobDomain, setJobDomain] = useState('');
   const [mode, setMode] = useState<InterviewMode>('comprehensive');
   const [round, setRound] = useState<InterviewRound>('screening');
+  const [brainMode, setBrainMode] = useState<BrainMode>('analytical');
   const [enablePressureMode, setEnablePressureMode] = useState(false);
   const [enableHints, setEnableHints] = useState(true);
+  const [enableCodingChallenges, setEnableCodingChallenges] = useState(false);
+  const [enablePsychometricAnalysis, setEnablePsychometricAnalysis] = useState(true);
+  const [selectedPersonalities, setSelectedPersonalities] = useState<InterviewerPersonality[]>(['friendly-hr', 'logical-analyst']);
 
   const handleAddSkill = () => {
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -34,6 +38,16 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
 
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter(skill => skill !== skillToRemove));
+  };
+
+  const togglePersonality = (personality: InterviewerPersonality) => {
+    if (selectedPersonalities.includes(personality)) {
+      setSelectedPersonalities(selectedPersonalities.filter(p => p !== personality));
+    } else {
+      if (selectedPersonalities.length < 3) {
+        setSelectedPersonalities([...selectedPersonalities, personality]);
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,16 +65,28 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
       jobDomain: jobDomain.trim(),
       mode,
       round,
+      brainMode,
       enablePressureMode,
       enableHints,
+      enableCodingChallenges,
+      enablePsychometricAnalysis,
+      selectedPersonalities: selectedPersonalities.length > 0 ? selectedPersonalities : ['friendly-hr'],
     });
   };
 
   const isFormValid = name.trim() && desiredRole.trim() && jobDomain.trim() && skills.length > 0;
 
+  const personalityLabels: Record<InterviewerPersonality, string> = {
+    'strict-engineer': '🔧 Strict Engineer',
+    'friendly-hr': '😊 Friendly HR',
+    'logical-analyst': '🧠 Logical Analyst',
+    'creative-solver': '🎨 Creative Solver',
+    'ceo-visionary': '👔 CEO Visionary',
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl shadow-lg">
+      <Card className="w-full max-w-3xl shadow-lg">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -69,7 +95,7 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
             <div>
               <CardTitle className="text-2xl">AI Professional Interview Simulator</CardTitle>
               <CardDescription className="text-base mt-1">
-                Configure your profile for a realistic multi-role panel interview
+                Configure your profile for an ultra-realistic, psychologically intelligent interview
               </CardDescription>
             </div>
           </div>
@@ -119,19 +145,36 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="round">Interview Round</Label>
-              <Select value={round} onValueChange={(value) => setRound(value as InterviewRound)}>
-                <SelectTrigger id="round">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="screening">Screening Round</SelectItem>
-                  <SelectItem value="technical">Technical Round</SelectItem>
-                  <SelectItem value="behavioral">Behavioral Round</SelectItem>
-                  <SelectItem value="final">Final Round</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="round">Interview Round</Label>
+                <Select value={round} onValueChange={(value) => setRound(value as InterviewRound)}>
+                  <SelectTrigger id="round">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="screening">Screening Round</SelectItem>
+                    <SelectItem value="technical">Technical Round</SelectItem>
+                    <SelectItem value="behavioral">Behavioral Round</SelectItem>
+                    <SelectItem value="final">Final Round</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="brainMode">Brain Mode</Label>
+                <Select value={brainMode} onValueChange={(value) => setBrainMode(value as BrainMode)}>
+                  <SelectTrigger id="brainMode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="analytical">🧮 Analytical Brain</SelectItem>
+                    <SelectItem value="creative">🎨 Creative Brain</SelectItem>
+                    <SelectItem value="execution">⚡ Execution Brain</SelectItem>
+                    <SelectItem value="social">🤝 Social Brain</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -193,13 +236,31 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
               )}
             </div>
 
+            <div className="space-y-3 pt-4 border-t border-border">
+              <Label className="text-base font-semibold">Interviewer Personalities (Select up to 3)</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {(Object.keys(personalityLabels) as InterviewerPersonality[]).map((personality) => (
+                  <Button
+                    key={personality}
+                    type="button"
+                    variant={selectedPersonalities.includes(personality) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => togglePersonality(personality)}
+                    className="justify-start text-xs"
+                  >
+                    {personalityLabels[personality]}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-4 pt-4 border-t border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-accent" />
                   <div>
-                    <Label htmlFor="pressureMode" className="cursor-pointer">Pressure Mode</Label>
-                    <p className="text-xs text-muted-foreground">Include time-sensitive and challenging scenarios</p>
+                    <Label htmlFor="pressureMode" className="cursor-pointer">Pressure Test Mode</Label>
+                    <p className="text-xs text-muted-foreground">Rapid-fire questions and high-stress scenarios</p>
                   </div>
                 </div>
                 <Switch
@@ -223,21 +284,52 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
                   onCheckedChange={setEnableHints}
                 />
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Code className="w-5 h-5 text-primary" />
+                  <div>
+                    <Label htmlFor="coding" className="cursor-pointer">Coding Challenges</Label>
+                    <p className="text-xs text-muted-foreground">Include live coding and debugging tasks</p>
+                  </div>
+                </div>
+                <Switch
+                  id="coding"
+                  checked={enableCodingChallenges}
+                  onCheckedChange={setEnableCodingChallenges}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-success" />
+                  <div>
+                    <Label htmlFor="psychometric" className="cursor-pointer">Psychometric Analysis</Label>
+                    <p className="text-xs text-muted-foreground">Big 5, MBTI, cognitive & behavioral profiling</p>
+                  </div>
+                </div>
+                <Switch
+                  id="psychometric"
+                  checked={enablePsychometricAnalysis}
+                  onCheckedChange={setEnablePsychometricAnalysis}
+                />
+              </div>
             </div>
 
             <div className="bg-primary/5 p-4 rounded-lg space-y-2">
               <div className="flex items-center gap-2 text-primary">
-                <Users className="w-5 h-5" />
-                <span className="font-semibold">Multi-Role Panel Interview</span>
+                <Target className="w-5 h-5" />
+                <span className="font-semibold">Ultra-Realistic AI Interview Experience</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Experience a realistic panel interview with multiple perspectives: HR Manager, Technical Lead, 
-                Behavioral Coach, and Domain Expert. Each will assess different aspects of your capabilities.
+                Experience a psychologically intelligent interview with cognitive analysis, behavioral profiling, 
+                knowledge gap detection, and job-fit prediction. Multiple interviewer personalities will assess 
+                different aspects of your capabilities.
               </p>
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={!isFormValid}>
-              Start Interview
+              Start Advanced Interview
             </Button>
           </form>
         </CardContent>
