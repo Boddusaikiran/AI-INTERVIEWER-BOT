@@ -1,92 +1,230 @@
-# Welcome to Your Miaoda Project
+# AI Professional Interview Simulator 🎯
 
-## Project Info
+An advanced intelligent interview simulation system powered by AI that conducts hyper-realistic, adaptive professional interviews. Features cognitive intelligence tracking, psychometric analysis, multi-brain adaptive interviewing, real-time knowledge gap detection, and comprehensive personality profiling.
 
-## Project Directory
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-18-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-blue.svg)
 
-```
-├── README.md # Documentation
-├── components.json # Component library configuration
-├── eslint.config.js # ESLint configuration
-├── index.html # Entry file
-├── package.json # Package management
-├── postcss.config.js # PostCSS configuration
-├── public # Static resources directory
-│   ├── favicon.png # Icon
-│   └── images # Image resources
-├── src # Source code directory
-│   ├── App.tsx # Entry file
-│   ├── components # Components directory
-│   ├── context # Context directory
-│   ├── db # Database configuration directory
-│   ├── hooks # Common hooks directory
-│   ├── index.css # Global styles
-│   ├── layout # Layout directory
-│   ├── lib # Utility library directory
-│   ├── main.tsx # Entry file
-│   ├── routes.tsx # Routing configuration
-│   ├── pages # Pages directory
-│   ├── services # Database interaction directory
-│   ├── types # Type definitions directory
-├── tsconfig.app.json # TypeScript frontend configuration file
-├── tsconfig.json # TypeScript configuration file
-├── tsconfig.node.json # TypeScript Node.js configuration file
-└── vite.config.ts # Vite configuration file
-```
+## ✨ Key Features
 
-## Tech Stack
+### 🧠 Cognitive Intelligence Layer
+- Real-time tracking of thinking speed, logical structure, and reasoning depth
+- Emotional tone detection and stress level monitoring
+- Typing pattern analysis for cognitive insights
+- Adaptive questioning based on cognitive profile
 
-Vite, TypeScript, React, Supabase
+### 📊 Psychometric Analysis
+- **Big Five (OCEAN)** personality traits assessment
+- **MBTI** personality type identification
+- **IQ-style** logical reasoning tests
+- Motivation and reliability scoring
+- Leadership style identification
 
-## Development Guidelines
+### 🎭 Multi-Brain Adaptive Interviewing
+- **Analytical Mode**: Logic-driven questions, data analysis, systematic problem-solving
+- **Creative Mode**: Innovation challenges, originality assessment
+- **Execution Mode**: Leadership scenarios, project management
+- **Social Mode**: Communication evaluation, teamwork dynamics
 
-### How to edit code locally?
+### 👥 Multi-Interviewer Personality System
+- **Strict Senior Engineer**: Technical depth, high standards
+- **Friendly HR Manager**: Cultural fit, behavioral assessment
+- **Logical Analyst**: Data-driven evaluation, structured thinking
+- **Creative Problem Solver**: Innovation focus, lateral thinking
+- **CEO Visionary**: Strategic thinking, leadership potential
 
-You can choose [VSCode](https://code.visualstudio.com/Download) or any IDE you prefer. The only requirement is to have Node.js and npm installed.
+### 🎯 Advanced Testing Modes
+- **Cognitive Reasoning Tree** (CoT + ToT + GoT Fusion)
+- **Meta-Learning Evaluation**: Tracks learning from mistakes
+- **Cognitive Bias Detection**: Identifies thinking biases
+- **Long-Horizon Decision Simulation**: Multi-step scenarios
+- **Adversarial Resistance Test**: Trick questions and contradictions
+- **Ethical & Moral Judgment Simulation**
+- **Cross-Culture Intelligence Testing**
 
-### Environment Requirements
+### 📈 Comprehensive Evaluation System
+- Multi-dimensional scoring (Technical, Problem-Solving, Communication, Behavioral, Cultural Fit)
+- Real-time knowledge gap detection with severity levels
+- Deception and overconfidence indicators
+- Job-fit prediction with success likelihood
+- Personalized 4-week improvement plan
+- Learning resources with priority levels
 
-```
-# Node.js ≥ 20
-# npm ≥ 10
-Example:
-# node -v   # v20.18.3
-# npm -v    # 10.8.2
-```
+### ⌨️ Real-Time Typing Pattern Tracking
+- Character count and typing speed monitoring
+- Pause detection (>2 seconds)
+- Correction tracking
+- Cognitive metrics from typing behavior
 
-### Installing Node.js on Windows
+## 🚀 Tech Stack
 
-```
-# Step 1: Visit the Node.js official website: https://nodejs.org/, click download. The website will automatically suggest a suitable version (32-bit or 64-bit) for your system.
-# Step 2: Run the installer: Double-click the downloaded installer to run it.
-# Step 3: Complete the installation: Follow the installation wizard to complete the process.
-# Step 4: Verify installation: Open Command Prompt (cmd) or your IDE terminal, and type `node -v` and `npm -v` to check if Node.js and npm are installed correctly.
-```
+- **Frontend**: React 18 + TypeScript
+- **UI Components**: shadcn/ui
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **AI Integration**: Large Language Model API
+- **State Management**: React Context + Hooks
 
-### Installing Node.js on macOS
+## 📦 Installation
 
-```
-# Step 1: Using Homebrew (Recommended method): Open Terminal. Type the command `brew install node` and press Enter. If Homebrew is not installed, you need to install it first by running the following command in Terminal:
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-Alternatively, use the official installer: Visit the Node.js official website. Download the macOS .pkg installer. Open the downloaded .pkg file and follow the prompts to complete the installation.
-# Step 2: Verify installation: Open Command Prompt (cmd) or your IDE terminal, and type `node -v` and `npm -v` to check if Node.js and npm are installed correctly.
-```
+### Prerequisites
 
-### After installation, follow these steps:
-
-```
-# Step 1: Download the code package
-# Step 2: Extract the code package
-# Step 3: Open the code package with your IDE and navigate into the code directory
-# Step 4: In the IDE terminal, run the command to install dependencies: npm i
-# Step 5: In the IDE terminal, run the command to start the development server: npm run dev -- --host 127.0.0.1
-# Step 6: if step 5 failed, try this command to start the development server: npx vite --host 127.0.0.1
+```bash
+Node.js >= 20
+npm >= 10
 ```
 
-### How to develop backend services?
+### Setup
 
-Configure environment variables and install relevant dependencies.If you need to use a database, please use the official version of Supabase.
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd ai-interview-simulator
 
-## Learn More
+# Install dependencies
+npm install
 
-You can also check the help documentation: Download and Building the app（ [https://intl.cloud.baidu.com/en/doc/MIAODA/s/download-and-building-the-app-en](https://intl.cloud.baidu.com/en/doc/MIAODA/s/download-and-building-the-app-en)）to learn more detailed content.
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your API keys
+
+# Start development server
+npm run dev
+```
+
+## 🎨 Design System
+
+The application features a modern **purple/violet theme**:
+- **Primary Color**: Vibrant Purple (#8B5CF6)
+- **Background**: Light Lavender (#FAFAFF)
+- **Accent**: Pink (#EC4899)
+- **Success**: Green (#4CAF50)
+- **Warning**: Orange (maintained)
+
+This color scheme reflects the innovative, AI-powered nature of the platform while maintaining professional credibility.
+
+## 📁 Project Structure
+
+```
+├── src/
+│   ├── components/
+│   │   ├── interview/
+│   │   │   ├── ConfigurationForm.tsx    # Interview setup
+│   │   │   ├── InterviewSession.tsx     # Main interview interface
+│   │   │   ├── QuestionDisplay.tsx      # Question presentation
+│   │   │   ├── AnswerInput.tsx          # Answer input with typing tracking
+│   │   │   ├── FeedbackCard.tsx         # Per-question feedback
+│   │   │   └── EvaluationReport.tsx     # Final comprehensive report
+│   │   └── ui/                          # shadcn/ui components
+│   ├── services/
+│   │   └── interviewApi.ts              # AI API integration
+│   ├── types/
+│   │   └── interview.ts                 # TypeScript interfaces
+│   ├── pages/
+│   │   └── InterviewSimulator.tsx       # Main page
+│   └── index.css                        # Design system tokens
+├── docs/
+│   └── prd.md                           # Product requirements
+└── TODO.md                              # Implementation tracking
+```
+
+## 🎯 Usage
+
+1. **Configure Interview**
+   - Enter your name, experience level, skills, and desired role
+   - Select interview mode (Technical, Behavioral, Comprehensive)
+   - Choose interview round (Screening, Technical, Behavioral, Final)
+   - Select brain mode and interviewer personalities
+   - Enable optional features (Pressure Mode, Hints, Coding Challenges, Psychometric Analysis)
+
+2. **Take Interview**
+   - Answer questions one at a time
+   - Receive real-time feedback with multi-dimensional scoring
+   - View model answers and improvement suggestions
+   - Track your typing patterns and cognitive metrics
+
+3. **Review Evaluation**
+   - Comprehensive performance analysis across all dimensions
+   - Psychometric profile (Big 5, MBTI, IQ)
+   - Behavioral and cognitive intelligence analysis
+   - Job-fit prediction with success likelihood
+   - Knowledge gaps with targeted resources
+   - Personalized 4-week improvement plan
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_KEY=your_api_key_here
+VITE_API_ENDPOINT=your_api_endpoint_here
+```
+
+## 🧪 Development
+
+```bash
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
+
+# Preview production build
+npm run preview
+```
+
+## 📊 Features Breakdown
+
+### 21 Ultra-Advanced Features
+
+1. Cognitive Reasoning Tree (CoT + ToT + GoT Fusion)
+2. Meta-Learning Evaluation
+3. Cognitive Bias Detection
+4. Attention Drift Mapping
+5. Brain-Lateralization Assessment
+6. Long-Horizon Decision Simulation
+7. Adversarial Resistance Test
+8. Chain Reaction Scenario Mode
+9. Ethical & Moral Judgment Simulation
+10. Hybrid Role Simulation
+11. Cross-Culture Intelligence Testing
+12. Multi-Perspective Replay
+13. Psychometric Profile Analysis
+14. Behavioral Analysis
+15. Cognitive Intelligence Analysis
+16. Job-Fit Prediction
+17. Knowledge Gap Detection
+18. Deception & Overconfidence Detection
+19. 5 Distinct Interviewer Personalities
+20. 4 Brain Modes
+21. Real-Time Typing Pattern Tracking
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Built with [React](https://react.dev/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Powered by advanced AI language models
+
+## 📞 Support
+
+For questions or support, please open an issue in the GitHub repository.
+
+---
+
+**Made with ❤️ for interview preparation**
