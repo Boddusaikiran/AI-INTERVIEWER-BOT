@@ -176,6 +176,9 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     const strengthsMatch = response.match(/strengths?[:\s]+(.*?)(?=areas? for improvement|improvements?|suggestions?|score|$)/is);
     const improvementsMatch = response.match(/areas? for improvement|improvements?[:\s]+(.*?)(?=suggestions?|score|$)/is);
     const suggestionsMatch = response.match(/suggestions?[:\s]+(.*?)(?=score|$)/is);
+    const modelAnswerMatch = response.match(/model answer[:\s]+(.*?)(?=\n\n|$)/is);
+    const roleMatch = response.match(/(HR Manager|Technical Lead|Behavioral Coach|Domain Expert)/i);
+    const difficultyMatch = response.match(/difficulty[:\s]+(easy|medium|hard|expert)/i);
 
     const parseList = (text: string | undefined): string[] => {
       if (!text) return [];
@@ -186,11 +189,32 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         .slice(0, 3);
     };
 
+    const getRole = (roleText: string | undefined): 'hr' | 'technical-lead' | 'behavioral-coach' | 'domain-expert' => {
+      if (!roleText) return 'hr';
+      const lower = roleText.toLowerCase();
+      if (lower.includes('technical')) return 'technical-lead';
+      if (lower.includes('behavioral')) return 'behavioral-coach';
+      if (lower.includes('domain') || lower.includes('expert')) return 'domain-expert';
+      return 'hr';
+    };
+
     return {
       score,
+      multiDimensionalScore: {
+        technicalKnowledge: score,
+        problemSolving: score,
+        communication: score,
+        behavioralSkills: score,
+        culturalFit: score,
+        overall: score,
+      },
       strengths: parseList(strengthsMatch?.[1]),
       improvements: parseList(improvementsMatch?.[1]),
       suggestions: suggestionsMatch?.[1]?.trim().slice(0, 300) || 'Continue practicing and refining your responses.',
+      modelAnswer: modelAnswerMatch?.[1]?.trim(),
+      interviewerRole: getRole(roleMatch?.[1]),
+      difficulty: (difficultyMatch?.[1]?.toLowerCase() as 'easy' | 'medium' | 'hard' | 'expert') || 'medium',
+      timeSpent: 0,
     };
   };
 
@@ -228,20 +252,53 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         behavioralScore: 7,
         situationalScore: 7,
         communicationScore: 7,
+        problemSolvingScore: 7,
+        culturalFitScore: 7,
         overallScore: 7,
         strengths: ['Good communication', 'Thoughtful responses', 'Professional demeanor'],
         weaknesses: ['Could provide more specific examples', 'Consider elaborating on technical details'],
         improvementPlan: [
-          'Practice answering common interview questions',
-          'Prepare specific examples from your experience',
-          'Research the company and role thoroughly',
+          {
+            week: 1,
+            focus: 'Foundation Building',
+            activities: ['Practice answering common interview questions', 'Prepare specific examples from your experience'],
+            resources: [
+              { title: 'Interview Preparation Guide', type: 'article', description: 'Comprehensive guide to interview prep' }
+            ]
+          },
+          {
+            week: 2,
+            focus: 'Technical Skills',
+            activities: ['Review technical concepts', 'Practice coding challenges'],
+            resources: [
+              { title: 'Technical Interview Handbook', type: 'book', description: 'Essential technical interview guide' }
+            ]
+          },
+          {
+            week: 3,
+            focus: 'Behavioral Questions',
+            activities: ['Study the STAR method', 'Prepare behavioral stories'],
+            resources: [
+              { title: 'STAR Method Course', type: 'course', description: 'Master behavioral interviews' }
+            ]
+          },
+          {
+            week: 4,
+            focus: 'Mock Interviews',
+            activities: ['Conduct mock interviews', 'Get feedback from peers'],
+            resources: [
+              { title: 'Mock Interview Platform', type: 'exercise', description: 'Practice with real scenarios' }
+            ]
+          }
         ],
         resources: [
-          'Practice with mock interviews',
-          'Review common interview questions for your field',
-          'Study the STAR method for behavioral questions',
+          { title: 'Practice with mock interviews', type: 'exercise', description: 'Regular practice sessions' },
+          { title: 'Review common interview questions for your field', type: 'article', description: 'Industry-specific questions' },
+          { title: 'Study the STAR method for behavioral questions', type: 'course', description: 'Behavioral interview technique' },
         ],
         advice: 'You demonstrated good potential in this interview. Focus on providing more specific examples and elaborating on your technical knowledge. Keep practicing and you will continue to improve!',
+        performanceTrend: 'consistent',
+        readinessLevel: 'needs-practice',
       };
       setFinalEvaluation(fallbackEvaluation);
       setIsComplete(true);

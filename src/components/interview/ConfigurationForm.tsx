@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Briefcase } from 'lucide-react';
-import type { InterviewConfig, ExperienceLevel, InterviewMode } from '@/types/interview';
+import { Switch } from '@/components/ui/switch';
+import { X, Plus, Briefcase, Users, Zap, Lightbulb } from 'lucide-react';
+import type { InterviewConfig, ExperienceLevel, InterviewMode, InterviewRound } from '@/types/interview';
 
 interface ConfigurationFormProps {
   onStart: (config: InterviewConfig) => void;
@@ -20,6 +21,9 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
   const [desiredRole, setDesiredRole] = useState('');
   const [jobDomain, setJobDomain] = useState('');
   const [mode, setMode] = useState<InterviewMode>('comprehensive');
+  const [round, setRound] = useState<InterviewRound>('screening');
+  const [enablePressureMode, setEnablePressureMode] = useState(false);
+  const [enableHints, setEnableHints] = useState(true);
 
   const handleAddSkill = () => {
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -46,6 +50,9 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
       desiredRole: desiredRole.trim(),
       jobDomain: jobDomain.trim(),
       mode,
+      round,
+      enablePressureMode,
+      enableHints,
     });
   };
 
@@ -62,7 +69,7 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
             <div>
               <CardTitle className="text-2xl">AI Professional Interview Simulator</CardTitle>
               <CardDescription className="text-base mt-1">
-                Configure your profile to begin the interview simulation
+                Configure your profile for a realistic multi-role panel interview
               </CardDescription>
             </div>
           </div>
@@ -110,6 +117,21 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="round">Interview Round</Label>
+              <Select value={round} onValueChange={(value) => setRound(value as InterviewRound)}>
+                <SelectTrigger id="round">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="screening">Screening Round</SelectItem>
+                  <SelectItem value="technical">Technical Round</SelectItem>
+                  <SelectItem value="behavioral">Behavioral Round</SelectItem>
+                  <SelectItem value="final">Final Round</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -169,6 +191,49 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-accent" />
+                  <div>
+                    <Label htmlFor="pressureMode" className="cursor-pointer">Pressure Mode</Label>
+                    <p className="text-xs text-muted-foreground">Include time-sensitive and challenging scenarios</p>
+                  </div>
+                </div>
+                <Switch
+                  id="pressureMode"
+                  checked={enablePressureMode}
+                  onCheckedChange={setEnablePressureMode}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-warning" />
+                  <div>
+                    <Label htmlFor="hints" className="cursor-pointer">Enable Hints</Label>
+                    <p className="text-xs text-muted-foreground">Get helpful guidance when struggling</p>
+                  </div>
+                </div>
+                <Switch
+                  id="hints"
+                  checked={enableHints}
+                  onCheckedChange={setEnableHints}
+                />
+              </div>
+            </div>
+
+            <div className="bg-primary/5 p-4 rounded-lg space-y-2">
+              <div className="flex items-center gap-2 text-primary">
+                <Users className="w-5 h-5" />
+                <span className="font-semibold">Multi-Role Panel Interview</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Experience a realistic panel interview with multiple perspectives: HR Manager, Technical Lead, 
+                Behavioral Coach, and Domain Expert. Each will assess different aspects of your capabilities.
+              </p>
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={!isFormValid}>
