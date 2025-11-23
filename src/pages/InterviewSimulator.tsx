@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ConfigurationForm } from '@/components/interview/ConfigurationForm';
 import { InterviewSession } from '@/components/interview/InterviewSession';
 import type { InterviewConfig } from '@/types/interview';
