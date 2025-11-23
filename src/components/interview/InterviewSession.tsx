@@ -233,7 +233,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     setIsGeneratingEvaluation(true);
     
     try {
-      const evaluationPrompt = generateFinalEvaluationPrompt();
+      const evaluationPrompt = generateFinalEvaluationPrompt(config);
       const evaluationMessage: ConversationMessage = {
         role: 'user',
         parts: [{ text: evaluationPrompt }],
