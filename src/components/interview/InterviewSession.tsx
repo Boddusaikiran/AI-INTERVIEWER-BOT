@@ -3,24 +3,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertCircle, User, Bot } from 'lucide-react';
+import { Loader2, AlertCircle, User, Bot, Volume2, VolumeX, ChevronRight } from 'lucide-react';
 import { QuestionDisplay } from './QuestionDisplay';
 import { AnswerInput } from './AnswerInput';
 import { FeedbackCard } from './FeedbackCard';
 import { ProgressIndicator } from './ProgressIndicator';
 import { EvaluationReport } from './EvaluationReport';
-import type { 
-  InterviewConfig, 
-  ConversationMessage, 
+import type {
+  InterviewConfig,
+  ConversationMessage,
   QuestionFeedback,
-  FinalEvaluation 
+  FinalEvaluation,
+  InterviewRound
 } from '@/types/interview';
-import { 
-  streamInterviewResponse, 
-  generateInterviewPrompt, 
-  generateFinalEvaluationPrompt 
+import {
+  streamInterviewResponse,
+  generateInterviewPrompt,
+  generateFinalEvaluationPrompt
 } from '@/services/interviewApi';
 import { toast } from 'sonner';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { Badge } from '@/components/ui/badge';
 
 interface InterviewSessionProps {
   config: InterviewConfig;
@@ -34,7 +37,8 @@ interface Message {
   timestamp: Date;
 }
 
-const TARGET_QUESTIONS = 5;
+const QUESTIONS_PER_ROUND = 3;
+const ROUNDS: InterviewRound[] = ['screening', 'technical', 'behavioral'];
 
 export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,10 +51,19 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   const [isComplete, setIsComplete] = useState(false);
   const [finalEvaluation, setFinalEvaluation] = useState<FinalEvaluation | null>(null);
   const [isGeneratingEvaluation, setIsGeneratingEvaluation] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+
+  // Multi-round state
+  const [currentRound, setCurrentRound] = useState<InterviewRound>(config.round);
+  const [roundQuestionCount, setRoundQuestionCount] = useState(0);
+
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { speak, stop, isSpeaking, hasSynthesisSupport } = useTextToSpeech();
 
   useEffect(() => {
     startInterview();
+    return () => stop();
   }, []);
 
   useEffect(() => {
@@ -59,12 +72,23 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     }
   }, [messages, currentQuestion]);
 
+  // Effect to read new questions when they are fully generated
+  useEffect(() => {
+    if (currentQuestion && !isLoading && isVoiceEnabled && !isSpeaking) {
+      // Small delay to ensure text is complete and to provide natural pause
+      const timer = setTimeout(() => {
+        speak(currentQuestion);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestion, isLoading, isVoiceEnabled]);
+
   const startInterview = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const initialPrompt = generateInterviewPrompt(config, true);
+      const initialPrompt = generateInterviewPrompt(config, true, currentRound);
       const initialMessage: ConversationMessage = {
         role: 'user',
         parts: [{ text: initialPrompt }],
@@ -102,6 +126,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   };
 
   const handleAnswerSubmit = async (answer: string, typingMetrics?: { startTime: number; endTime: number; characterCount: number; pauseCount: number; correctionCount: number }) => {
+    stop(); // Stop speaking if user interrupts
     setIsSubmitting(true);
     setError(null);
 
@@ -121,7 +146,19 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     setConversationHistory(newHistory);
 
     try {
-      const nextPrompt = generateInterviewPrompt(config, false);
+      // Determine if we need to switch rounds
+      let nextRound = currentRound;
+      let isRoundTransition = false;
+
+      if (config.mode === 'comprehensive' && roundQuestionCount + 1 >= QUESTIONS_PER_ROUND) {
+        const currentRoundIndex = ROUNDS.indexOf(currentRound);
+        if (currentRoundIndex < ROUNDS.length - 1) {
+          nextRound = ROUNDS[currentRoundIndex + 1];
+          isRoundTransition = true;
+        }
+      }
+
+      const nextPrompt = generateInterviewPrompt(config, false, nextRound, isRoundTransition);
       const promptMessage: ConversationMessage = {
         role: 'user',
         parts: [{ text: nextPrompt }],
@@ -131,7 +168,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
 
       let fullResponse = '';
       setCurrentQuestion('');
-      
+
       for await (const chunk of streamInterviewResponse(historyWithPrompt)) {
         if (!chunk.isComplete) {
           fullResponse += chunk.text;
@@ -148,8 +185,16 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
       const newAnsweredCount = answeredCount + 1;
       setAnsweredCount(newAnsweredCount);
 
+      if (isRoundTransition) {
+        setCurrentRound(nextRound);
+        setRoundQuestionCount(0);
+        toast.success(`Advancing to ${nextRound.charAt(0).toUpperCase() + nextRound.slice(1)} Round`);
+      } else {
+        setRoundQuestionCount(prev => prev + 1);
+      }
+
       const feedback = extractFeedback(fullResponse);
-      
+
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: fullResponse,
@@ -157,7 +202,16 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         timestamp: new Date(),
       }]);
 
-      if (newAnsweredCount >= TARGET_QUESTIONS) {
+      // Check for completion: either max total questions or finished all rounds in comprehensive mode
+      const isComprehensiveComplete = config.mode === 'comprehensive' &&
+        currentRound === 'behavioral' &&
+        roundQuestionCount + 1 >= QUESTIONS_PER_ROUND;
+
+      // Default completion check (e.g. 10 questions total if not comprehensive, or whatever limit)
+      // For now, let's stick to the round logic for comprehensive, and a fixed number for others
+      const targetTotal = config.mode === 'comprehensive' ? QUESTIONS_PER_ROUND * 3 : 5;
+
+      if (newAnsweredCount >= targetTotal) {
         await generateFinalEvaluation([...historyWithPrompt, assistantMessage]);
       }
     } catch (err) {
@@ -231,7 +285,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
 
   const generateFinalEvaluation = async (history: ConversationMessage[]) => {
     setIsGeneratingEvaluation(true);
-    
+
     try {
       const evaluationPrompt = generateFinalEvaluationPrompt(config);
       const evaluationMessage: ConversationMessage = {
@@ -340,18 +394,43 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Interview in Progress</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-foreground">Interview in Progress</h2>
+                  <Badge variant="secondary" className="uppercase text-xs font-bold tracking-wider">
+                    {currentRound} Round
+                  </Badge>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {config.name} • {config.desiredRole} • {config.mode} mode
                 </p>
               </div>
-              <Button variant="outline" onClick={onRestart} size="sm">
-                Exit Interview
-              </Button>
+              <div className="flex items-center gap-2">
+                {hasSynthesisSupport && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (isSpeaking) {
+                        stop();
+                        setIsVoiceEnabled(false);
+                      } else {
+                        setIsVoiceEnabled(!isVoiceEnabled);
+                      }
+                    }}
+                    className={isVoiceEnabled ? "text-primary border-primary" : "text-muted-foreground"}
+                    title={isVoiceEnabled ? "Mute AI Voice" : "Enable AI Voice"}
+                  >
+                    {isVoiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  </Button>
+                )}
+                <Button variant="outline" onClick={onRestart} size="sm">
+                  Exit Interview
+                </Button>
+              </div>
             </div>
-            <ProgressIndicator 
+            <ProgressIndicator
               currentQuestion={answeredCount + 1}
-              totalQuestions={TARGET_QUESTIONS}
+              totalQuestions={config.mode === 'comprehensive' ? QUESTIONS_PER_ROUND * 3 : 5}
               answeredQuestions={answeredCount}
             />
           </CardContent>
@@ -444,8 +523,8 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         </ScrollArea>
 
         {!isLoading && !isGeneratingEvaluation && currentQuestion && (
-          <AnswerInput 
-            onSubmit={handleAnswerSubmit} 
+          <AnswerInput
+            onSubmit={handleAnswerSubmit}
             isSubmitting={isSubmitting}
             disabled={isComplete}
             enableCognitiveTracking={config.enablePsychometricAnalysis}

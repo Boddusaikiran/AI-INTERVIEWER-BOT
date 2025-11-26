@@ -25,6 +25,7 @@ export interface InterviewConfig extends CandidateProfile {
   enablePsychometricAnalysis: boolean;
   selectedPersonalities: InterviewerPersonality[];
   brainMode: BrainMode;
+  resumeText?: string;
 }
 
 export interface CognitiveMetrics {

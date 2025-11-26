@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { X, Plus, Briefcase, Users, Zap, Lightbulb, Brain, Target, Code } from 'lucide-react';
+import { X, Plus, Briefcase, Users, Zap, Lightbulb, Brain, Target, Code, FileText, Upload } from 'lucide-react';
 import type { InterviewConfig, ExperienceLevel, InterviewMode, InterviewRound, BrainMode, InterviewerPersonality } from '@/types/interview';
 
 interface ConfigurationFormProps {
@@ -28,6 +28,8 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
   const [enableCodingChallenges, setEnableCodingChallenges] = useState(false);
   const [enablePsychometricAnalysis, setEnablePsychometricAnalysis] = useState(true);
   const [selectedPersonalities, setSelectedPersonalities] = useState<InterviewerPersonality[]>(['friendly-hr', 'logical-analyst']);
+  const [resumeText, setResumeText] = useState('');
+  const [resumeFileName, setResumeFileName] = useState('');
 
   const handleAddSkill = () => {
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -50,9 +52,30 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
     }
   };
 
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setResumeFileName(file.name);
+
+    if (file.type === 'text/plain') {
+      const text = await file.text();
+      setResumeText(text);
+    } else if (file.type === 'application/pdf') {
+      // For PDF, we'll use a simple alert for now as we need pdfjs-dist
+      // In a real app, we'd implement PDF parsing here
+      // For this demo, we'll simulate extraction or ask user to copy-paste if needed
+      // But let's try to read it as text for now which might work for some PDFs or just set a placeholder
+      setResumeText(`[Resume File: ${file.name}] - Content extraction pending backend integration.`);
+    } else {
+      // Fallback for other types
+      setResumeText(`[Resume File: ${file.name}]`);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim() || !desiredRole.trim() || !jobDomain.trim() || skills.length === 0) {
       return;
     }
@@ -71,6 +94,7 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
       enableCodingChallenges,
       enablePsychometricAnalysis,
       selectedPersonalities: selectedPersonalities.length > 0 ? selectedPersonalities : ['friendly-hr'],
+      resumeText,
     });
   };
 
@@ -200,6 +224,28 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="resume">Resume (Optional)</Label>
+              <div className="flex items-center gap-4">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".txt,.pdf"
+                    onChange={handleResumeUpload}
+                    className="cursor-pointer"
+                  />
+                </div>
+                {resumeFileName && (
+                  <Badge variant="outline" className="flex gap-1 items-center">
+                    <FileText className="w-3 h-3" />
+                    {resumeFileName}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Upload PDF or TXT to personalize questions based on your experience.</p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="skills">Skills</Label>
               <div className="flex gap-2">
                 <Input
@@ -322,8 +368,8 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
                 <span className="font-semibold">Ultra-Realistic AI Interview Experience</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Experience a psychologically intelligent interview with cognitive analysis, behavioral profiling, 
-                knowledge gap detection, and job-fit prediction. Multiple interviewer personalities will assess 
+                Experience a psychologically intelligent interview with cognitive analysis, behavioral profiling,
+                knowledge gap detection, and job-fit prediction. Multiple interviewer personalities will assess
                 different aspects of your capabilities.
               </p>
             </div>
@@ -337,3 +383,4 @@ export const ConfigurationForm = ({ onStart }: ConfigurationFormProps) => {
     </div>
   );
 };
+

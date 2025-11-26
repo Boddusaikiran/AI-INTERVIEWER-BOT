@@ -1,4 +1,4 @@
-import type { ConversationMessage, InterviewConfig, DifficultyLevel, InterviewerRole } from '@/types/interview';
+import type { ConversationMessage, InterviewConfig, DifficultyLevel, InterviewerRole, InterviewRound } from '@/types/interview';
 
 const API_URL = 'https://api-integrations.appmedo.com/app-7r2i8yv7gnwh/api-rLob8RdzAOl9/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 const APP_ID = import.meta.env.VITE_APP_ID || 'app-7r2i8yv7gnwh';
@@ -32,30 +32,42 @@ const getDifficultyGuidance = (difficulty: DifficultyLevel, averageScore: number
 };
 
 export const generateInterviewPrompt = (
-  config: InterviewConfig, 
-  isInitial: boolean, 
+  config: InterviewConfig,
+  isInitial: boolean,
+  currentRound: InterviewRound = 'screening',
+  isRoundTransition: boolean = false,
   currentRole: InterviewerRole = 'hr',
   currentDifficulty: DifficultyLevel = 'medium',
   averageScore: number = 0,
   questionCount: number = 0
 ): string => {
   const personalityDescriptions = {
-    'strict-engineer': 'Strict Senior Engineer - Direct, technical, expects precision and depth',
-    'friendly-hr': 'Friendly HR Manager - Warm, supportive, focuses on cultural fit and soft skills',
-    'logical-analyst': 'Logical Analyst - Methodical, data-driven, tests reasoning and structure',
-    'creative-solver': 'Creative Problem Solver - Innovative, open-minded, values unique approaches',
-    'ceo-visionary': 'CEO Visionary - Strategic, big-picture focused, tests leadership and vision'
+    'strict-engineer': 'Strict, detail-oriented, focuses on edge cases and optimization. Low tolerance for vague answers.',
+    'friendly-hr': 'Warm, professional, focuses on culture fit and soft skills. Encouraging but observant.',
+    'logical-analyst': 'Methodical, data-driven, deconstructs arguments. Looks for structured thinking.',
+    'creative-solver': 'Open-minded, appreciates novel solutions. Asks "what if" questions.',
+    'ceo-visionary': 'Big-picture focused, strategic, business-value oriented. Impatient with minor details.'
   };
 
   const brainModeDescriptions = {
-    'analytical': 'Analytical Brain Mode - Logic, data analysis, systematic problem-solving',
-    'creative': 'Creative Brain Mode - Innovation, originality, out-of-the-box thinking',
-    'execution': 'Execution Brain Mode - Leadership, getting things done, project management',
-    'social': 'Social Brain Mode - Communication, teamwork, emotional intelligence'
+    'analytical': 'Focus on logic, data structures, algorithms, and system architecture.',
+    'creative': 'Focus on innovation, design thinking, and problem-solving flexibility.',
+    'execution': 'Focus on delivery, project management, and getting things done.',
+    'social': 'Focus on team dynamics, leadership, and communication.'
+  };
+
+  const roundFocus: Record<InterviewRound, string> = {
+    'screening': 'Verify resume details, basic qualifications, communication skills, and cultural fit. Keep questions relatively high-level but probing.',
+    'technical': 'Deep dive into technical skills, system design, coding concepts, and problem-solving. Challenge the candidate with specific technical scenarios.',
+    'behavioral': 'Focus on STAR method (Situation, Task, Action, Result). Assess leadership, conflict resolution, and soft skills.',
+    'final': 'Executive presence, strategic thinking, long-term vision, and cultural alignment at a leadership level.'
   };
 
   if (isInitial) {
-    return `You are an ULTRA-ADVANCED AI INTERVIEW SIMULATOR with psychologically intelligent capabilities. You will conduct a comprehensive interview using multiple advanced analysis frameworks:
+    return `You are an ULTRA-ADVANCED AI INTERVIEW SIMULATOR with psychologically intelligent capabilities. You will conduct a comprehensive interview using multiple advanced analysis frameworks.
+
+CURRENT ROUND: ${currentRound.toUpperCase()}
+ROUND FOCUS: ${roundFocus[currentRound]}
 
 🧠 COGNITIVE ANALYSIS FRAMEWORKS:
 1. **Cognitive Reasoning Tree (CoT + ToT + GoT Fusion)**
@@ -84,7 +96,7 @@ export const generateInterviewPrompt = (
 🎭 INTERVIEWER CONFIGURATION:
 - Selected Personalities: ${config.selectedPersonalities.map(p => personalityDescriptions[p]).join(' | ')}
 - Brain Mode: ${brainModeDescriptions[config.brainMode]}
-- Interview Round: ${config.round}
+- Interview Round: ${currentRound}
 - Pressure Mode: ${config.enablePressureMode ? 'ENABLED - Include rapid-fire, multi-layer challenges, crisis scenarios' : 'Standard'}
 - Coding Challenges: ${config.enableCodingChallenges ? 'ENABLED - Include live coding, debugging, system design' : 'Disabled'}
 - Psychometric Analysis: ${config.enablePsychometricAnalysis ? 'ENABLED - Full Big 5, MBTI, IQ, behavioral profiling' : 'Disabled'}
@@ -96,6 +108,7 @@ export const generateInterviewPrompt = (
 - Target Role: ${config.desiredRole}
 - Domain: ${config.jobDomain}
 - Mode: ${config.mode}
+${config.resumeText ? `\n📄 RESUME CONTEXT:\nThe candidate has provided their resume. Use this specific information to ask targeted questions about their actual experience, projects, and achievements:\n${config.resumeText.slice(0, 2000)}...\n(Focus on verifying these specific claims)` : ''}
 
 🔬 ADVANCED TESTING MODES TO APPLY:
 
@@ -127,7 +140,7 @@ export const generateInterviewPrompt = (
 - Evaluate answers from CEO, Senior Engineer, HR, and Product Manager perspectives
 
 🎯 CRITICAL INSTRUCTIONS:
-1. Start with a warm, professional greeting explaining this is an advanced AI interview with cognitive analysis
+1. Start with a warm, professional greeting explaining this is an advanced AI interview with cognitive analysis. Mention we are starting with the ${currentRound} round.
 2. Rotate between selected interviewer personalities
 3. Ask ONE question at a time
 4. Apply the brain mode focus (${config.brainMode})
@@ -136,6 +149,7 @@ export const generateInterviewPrompt = (
 7. Detect cognitive biases and attention patterns
 8. For behavioral questions, use STAR method
 9. Adapt difficulty dynamically based on performance
+${config.resumeText ? '10. PRIORITY: Ask specific questions based on the candidate\'s resume projects and experience.' : ''}
 
 📊 FEEDBACK FORMAT (after each answer):
 - Interviewer Personality: [which personality is speaking]
@@ -150,6 +164,21 @@ export const generateInterviewPrompt = (
 - Difficulty Level: [easy/medium/hard/expert]
 
 Begin now with your greeting and first question from one of the selected personalities: ${config.selectedPersonalities[0]}`;
+  }
+
+  if (isRoundTransition) {
+    return `TRANSITIONING TO NEXT ROUND: ${currentRound.toUpperCase()}
+
+    The candidate has completed the previous round. Now, switch your focus entirely to the ${currentRound} round.
+
+    ROUND FOCUS: ${roundFocus[currentRound]}
+
+    Instructions:
+    1. Acknowledge the transition to the candidate (e.g., "Thank you. Now let's move on to the ${currentRound} portion of the interview.").
+    2. Ask the first question for this new round.
+    3. Ensure the difficulty matches the candidate's previous performance.
+
+    Maintain the same feedback format.`;
   }
 
   const roleDescription = getInterviewerRoleDescription(currentRole);
@@ -475,7 +504,7 @@ export async function* streamInterviewResponse(
 
     while (true) {
       const { done, value } = await reader.read();
-      
+
       if (done) {
         break;
       }
@@ -487,7 +516,7 @@ export async function* streamInterviewResponse(
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
-          
+
           if (data === '[DONE]') {
             yield { text: '', isComplete: true };
             return;
@@ -496,7 +525,7 @@ export async function* streamInterviewResponse(
           try {
             const parsed = JSON.parse(data);
             const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            
+
             if (text) {
               yield { text, isComplete: false };
             }
@@ -518,12 +547,12 @@ export const callInterviewAPI = async (
   conversationHistory: ConversationMessage[]
 ): Promise<string> => {
   let fullResponse = '';
-  
+
   for await (const chunk of streamInterviewResponse(conversationHistory)) {
     if (!chunk.isComplete) {
       fullResponse += chunk.text;
     }
   }
-  
+
   return fullResponse;
 };
