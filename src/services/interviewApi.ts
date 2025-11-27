@@ -1,6 +1,6 @@
 import type { ConversationMessage, InterviewConfig, DifficultyLevel, InterviewerRole, InterviewRound } from '@/types/interview';
 
-const API_URL = 'https://api-integrations.appmedo.com/app-7r2i8yv7gnwh/api-rLob8RdzAOl9/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const API_URL = 'https://api.example.com/app-7r2i8yv7gnwh/api-rLob8RdzAOl9/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 const APP_ID = import.meta.env.VITE_APP_ID || 'app-7r2i8yv7gnwh';
 
 export interface StreamChunk {

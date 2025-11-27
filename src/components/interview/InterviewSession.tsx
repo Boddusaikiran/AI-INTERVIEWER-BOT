@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertCircle, User, Bot, Volume2, VolumeX, ChevronRight } from 'lucide-react';
-import { QuestionDisplay } from './QuestionDisplay';
+import { Loader2, AlertCircle, User, Bot, Volume2, VolumeX } from 'lucide-react';
 import { AnswerInput } from './AnswerInput';
 import { FeedbackCard } from './FeedbackCard';
 import { ProgressIndicator } from './ProgressIndicator';
@@ -14,7 +13,9 @@ import type {
   ConversationMessage,
   QuestionFeedback,
   FinalEvaluation,
-  InterviewRound
+  InterviewRound,
+  DifficultyLevel,
+  InterviewerRole
 } from '@/types/interview';
 import {
   streamInterviewResponse,
@@ -56,6 +57,9 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   // Multi-round state
   const [currentRound, setCurrentRound] = useState<InterviewRound>(config.round);
   const [roundQuestionCount, setRoundQuestionCount] = useState(0);
+  const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('medium');
+  const [averageScore, setAverageScore] = useState(0);
+  const [currentRole, setCurrentRole] = useState<InterviewerRole>('hr');
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -125,7 +129,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
     }
   };
 
-  const handleAnswerSubmit = async (answer: string, typingMetrics?: { startTime: number; endTime: number; characterCount: number; pauseCount: number; correctionCount: number }) => {
+  const handleAnswerSubmit = async (answer: string, _typingMetrics?: { startTime: number; endTime: number; characterCount: number; pauseCount: number; correctionCount: number }) => {
     stop(); // Stop speaking if user interrupts
     setIsSubmitting(true);
     setError(null);
@@ -158,7 +162,16 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         }
       }
 
-      const nextPrompt = generateInterviewPrompt(config, false, nextRound, isRoundTransition);
+      const nextPrompt = generateInterviewPrompt(
+        config,
+        false,
+        nextRound,
+        isRoundTransition,
+        currentRole,
+        currentDifficulty,
+        averageScore,
+        answeredCount + 1
+      );
       const promptMessage: ConversationMessage = {
         role: 'user',
         parts: [{ text: nextPrompt }],
@@ -202,12 +215,20 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
         timestamp: new Date(),
       }]);
 
-      // Check for completion: either max total questions or finished all rounds in comprehensive mode
-      const isComprehensiveComplete = config.mode === 'comprehensive' &&
-        currentRound === 'behavioral' &&
-        roundQuestionCount + 1 >= QUESTIONS_PER_ROUND;
+      if (feedback) {
+        if (feedback.difficulty) {
+          setCurrentDifficulty(feedback.difficulty);
+        }
+        if (feedback.interviewerRole) {
+          setCurrentRole(feedback.interviewerRole);
+        }
+        // Update average score
+        const newTotalScore = (averageScore * answeredCount) + feedback.score;
+        const newAverage = newTotalScore / (answeredCount + 1);
+        setAverageScore(newAverage);
+      }
 
-      // Default completion check (e.g. 10 questions total if not comprehensive, or whatever limit)
+      // Check for completion: either max total questions or finished all rounds in comprehensive mode
       // For now, let's stick to the round logic for comprehensive, and a fixed number for others
       const targetTotal = config.mode === 'comprehensive' ? QUESTIONS_PER_ROUND * 3 : 5;
 
