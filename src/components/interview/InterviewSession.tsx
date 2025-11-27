@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertCircle, User, Bot, Volume2, VolumeX } from 'lucide-react';
+import { Loader2, AlertCircle, User, Bot } from 'lucide-react';
 import { AnswerInput } from './AnswerInput';
 import { FeedbackCard } from './FeedbackCard';
 import { ProgressIndicator } from './ProgressIndicator';
@@ -23,7 +23,7 @@ import {
   generateFinalEvaluationPrompt
 } from '@/services/interviewApi';
 import { toast } from 'sonner';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+
 import { Badge } from '@/components/ui/badge';
 
 interface InterviewSessionProps {
@@ -52,7 +52,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   const [isComplete, setIsComplete] = useState(false);
   const [finalEvaluation, setFinalEvaluation] = useState<FinalEvaluation | null>(null);
   const [isGeneratingEvaluation, setIsGeneratingEvaluation] = useState(false);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+
 
   // Multi-round state
   const [currentRound, setCurrentRound] = useState<InterviewRound>(config.round);
@@ -63,11 +63,10 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { speak, stop, isSpeaking, hasSynthesisSupport } = useTextToSpeech();
+
 
   useEffect(() => {
     startInterview();
-    return () => stop();
   }, []);
 
   useEffect(() => {
@@ -77,15 +76,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   }, [messages, currentQuestion]);
 
   // Effect to read new questions when they are fully generated
-  useEffect(() => {
-    if (currentQuestion && !isLoading && isVoiceEnabled && !isSpeaking) {
-      // Small delay to ensure text is complete and to provide natural pause
-      const timer = setTimeout(() => {
-        speak(currentQuestion);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentQuestion, isLoading, isVoiceEnabled]);
+
 
   const startInterview = async () => {
     setIsLoading(true);
@@ -130,7 +121,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
   };
 
   const handleAnswerSubmit = async (answer: string, _typingMetrics?: { startTime: number; endTime: number; characterCount: number; pauseCount: number; correctionCount: number }) => {
-    stop(); // Stop speaking if user interrupts
+
     setIsSubmitting(true);
     setError(null);
 
@@ -426,24 +417,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                {hasSynthesisSupport && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      if (isSpeaking) {
-                        stop();
-                        setIsVoiceEnabled(false);
-                      } else {
-                        setIsVoiceEnabled(!isVoiceEnabled);
-                      }
-                    }}
-                    className={isVoiceEnabled ? "text-primary border-primary" : "text-muted-foreground"}
-                    title={isVoiceEnabled ? "Mute AI Voice" : "Enable AI Voice"}
-                  >
-                    {isVoiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                  </Button>
-                )}
+
                 <Button variant="outline" onClick={onRestart} size="sm">
                   Exit Interview
                 </Button>

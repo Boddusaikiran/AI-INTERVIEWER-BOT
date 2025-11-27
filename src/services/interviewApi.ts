@@ -1,6 +1,6 @@
 import type { ConversationMessage, InterviewConfig, DifficultyLevel, InterviewerRole, InterviewRound } from '@/types/interview';
 
-const API_URL = 'https://api.example.com/app-7r2i8yv7gnwh/api-rLob8RdzAOl9/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const API_URL = 'https://api-integrations.appmedo.com/app-7r2i8yv7gnwh/api-rLob8RdzAOl9/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 const APP_ID = import.meta.env.VITE_APP_ID || 'app-7r2i8yv7gnwh';
 
 export interface StreamChunk {
@@ -18,7 +18,7 @@ const getInterviewerRoleDescription = (role: InterviewerRole): string => {
   return roles[role];
 };
 
-const getDifficultyGuidance = (difficulty: DifficultyLevel, averageScore: number): string => {
+const getDifficultyGuidance = (averageScore: number): string => {
   if (averageScore >= 8) {
     return 'The candidate is performing excellently. Increase difficulty to expert level with complex scenarios and edge cases.';
   }
@@ -149,7 +149,9 @@ ${config.resumeText ? `\n📄 RESUME CONTEXT:\nThe candidate has provided their 
 7. Detect cognitive biases and attention patterns
 8. For behavioral questions, use STAR method
 9. Adapt difficulty dynamically based on performance
-${config.resumeText ? '10. PRIORITY: Ask specific questions based on the candidate\'s resume projects and experience.' : ''}
+10. PRIORITY: Ask specific questions based on the candidate's resume projects and experience.
+11. **TRICKY QUESTION MODE**: Do NOT ask generic "tell me about X" questions. Ask specific, challenging scenarios, edge cases, or "gotcha" questions to test true depth of knowledge.
+12. **VISIBILITY**: Make the "Next Question" extremely clear and distinct from the feedback.
 
 📊 FEEDBACK FORMAT (after each answer):
 - Interviewer Personality: [which personality is speaking]
@@ -182,7 +184,7 @@ Begin now with your greeting and first question from one of the selected persona
   }
 
   const roleDescription = getInterviewerRoleDescription(currentRole);
-  const difficultyGuidance = getDifficultyGuidance(currentDifficulty, averageScore);
+  const difficultyGuidance = getDifficultyGuidance(averageScore);
 
   return `You are now speaking as: ${roleDescription}
 Current Personality: ${config.selectedPersonalities[questionCount % config.selectedPersonalities.length]}
@@ -226,12 +228,16 @@ ${config.enableCodingChallenges && questionCount % 3 === 0 ? '- **Coding Challen
    - Difficulty Level: [easy/medium/hard/expert]
 
 2. **Next Question:**
+   - **HEADER**: Start this section with "### ❓ NEXT QUESTION (${currentRound.toUpperCase()} ROUND)" to make it visible.
+   - **STRICT ROUND FOCUS**: You are currently in the **${currentRound.toUpperCase()}** round. Your question MUST be a ${currentRound} question.
+     - Focus: ${roundFocus[currentRound]}
+   - **DIFFICULTY**: Ask a TRICKY, challenging question. Avoid generic definitions. Ask for specific scenarios, debugging, or edge cases.
    - Apply one of the advanced testing modes
    - Match the brain mode focus (${config.brainMode})
    - Rotate to next personality if appropriate
    - ${config.enableHints && averageScore < 6 ? 'Provide subtle hints if candidate is struggling' : ''}
 
-Provide your comprehensive feedback and next advanced question now.`;
+Provide your comprehensive feedback and next advanced question now. Ensure the Next Question is distinct and challenging.`;
 };
 
 export const generateFinalEvaluationPrompt = (config: InterviewConfig): string => {

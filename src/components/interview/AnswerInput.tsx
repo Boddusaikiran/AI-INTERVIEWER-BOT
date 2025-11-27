@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Loader2, Clock, Mic, MicOff } from 'lucide-react';
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { Send, Loader2, Clock } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 
 interface TypingMetrics {
@@ -31,21 +31,9 @@ export const AnswerInput = ({ onSubmit, isSubmitting, disabled, enableCognitiveT
   const previousLength = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { isListening, transcript, startListening, stopListening, resetTranscript, hasRecognitionSupport } = useSpeechRecognition();
 
-  useEffect(() => {
-    if (transcript) {
-      setAnswer(prev => {
-        const newAnswer = prev ? `${prev} ${transcript}` : transcript;
-        // Trigger cognitive tracking update for voice input
-        if (enableCognitiveTracking && !startTime) {
-          setStartTime(Date.now());
-        }
-        return newAnswer;
-      });
-      resetTranscript();
-    }
-  }, [transcript, resetTranscript, enableCognitiveTracking, startTime]);
+
+
 
   useEffect(() => {
     if (startTime > 0 && !isSubmitting) {
@@ -101,9 +89,7 @@ export const AnswerInput = ({ onSubmit, isSubmitting, disabled, enableCognitiveT
       setElapsedTime(0);
       lastKeystrokeTime.current = 0;
       previousLength.current = 0;
-      if (isListening) {
-        stopListening();
-      }
+
     }
   };
 
@@ -114,13 +100,7 @@ export const AnswerInput = ({ onSubmit, isSubmitting, disabled, enableCognitiveT
     }
   };
 
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -134,27 +114,7 @@ export const AnswerInput = ({ onSubmit, isSubmitting, disabled, enableCognitiveT
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Your Answer</CardTitle>
           <div className="flex items-center gap-3">
-            {hasRecognitionSupport && (
-              <Button
-                variant={isListening ? "destructive" : "outline"}
-                size="sm"
-                onClick={toggleListening}
-                className={cn("gap-2", isListening && "animate-pulse")}
-                disabled={disabled || isSubmitting}
-              >
-                {isListening ? (
-                  <>
-                    <MicOff className="w-4 h-4" />
-                    Stop Recording
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-4 h-4" />
-                    Voice Input
-                  </>
-                )}
-              </Button>
-            )}
+
             {enableCognitiveTracking && startTime > 0 && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />
@@ -172,8 +132,7 @@ export const AnswerInput = ({ onSubmit, isSubmitting, disabled, enableCognitiveT
           onKeyDown={handleKeyDown}
           disabled={disabled || isSubmitting}
           className={cn(
-            "min-h-[120px] resize-none transition-colors",
-            isListening && "border-primary/50 bg-primary/5"
+            "min-h-[120px] resize-none transition-colors"
           )}
         />
         <div className="flex justify-between items-center">
