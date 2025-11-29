@@ -221,7 +221,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
 
       // Check for completion: either max total questions or finished all rounds in comprehensive mode
       // For now, let's stick to the round logic for comprehensive, and a fixed number for others
-      const targetTotal = config.mode === 'comprehensive' ? QUESTIONS_PER_ROUND * 3 : 5;
+      const targetTotal = 3;
 
       if (newAnsweredCount >= targetTotal) {
         await generateFinalEvaluation([...historyWithPrompt, assistantMessage]);
@@ -425,7 +425,7 @@ export const InterviewSession = ({ config, onRestart }: InterviewSessionProps) =
             </div>
             <ProgressIndicator
               currentQuestion={answeredCount + 1}
-              totalQuestions={config.mode === 'comprehensive' ? QUESTIONS_PER_ROUND * 3 : 5}
+              totalQuestions={3}
               answeredQuestions={answeredCount}
             />
           </CardContent>
